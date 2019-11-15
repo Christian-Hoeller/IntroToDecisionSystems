@@ -1,0 +1,52 @@
+@page "/TSP"
+
+@inject HttpClient Http
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (coordinates == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in coordinates)
+            {
+                <tr>
+                    <td>@c.OptimalTour</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    TSPspecs[] coordinates;
+
+    protected override async Task OnInitializedAsync()
+    {
+        coordinates = await Http.GetJsonAsync<TSPspecs[]>("sample-data/weather.json");
+    }
+
+    public class TSPspecs
+    {
+        public string Name{get;set;}
+        public List<int> OptimalTour{get;set;}
+        public List<Cities> Cities{get;set;}
+    }
+
+    public class Cities
+    {
+        public int X{get;set;}
+        public int Y{get;set;}
+    }
+}

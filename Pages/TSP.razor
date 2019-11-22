@@ -1,52 +1,111 @@
-@page "/TSP"
+@page "/tsp"
 
 @inject HttpClient Http
 
-<h1>Weather forecast</h1>
+<h1>TSPSolver</h1>
 
 <p>This component demonstrates fetching data from the server.</p>
 
-@if (coordinates == null)
+
+@if (specs == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var c in coordinates)
-            {
-                <tr>
-                    <td>@c.OptimalTour</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <form>
+        <label>
+            TSP specification
+            <select class="form-control" @onchange="TSPSpecSelected">
+                @foreach (var spec in specs)
+                {
+                    <option>@spec.Name</option>
+                }
+            </select>
+        </label>
+    </form>
+    <BECanvas @ref="scene" Width="500" Height="500"></BECanvas>
+
+
 }
 
+
 @code {
-    TSPspecs[] coordinates;
+
+
+
+    public class SerializableTSPSpec
+    {
+        public string Name { get; set; }
+        public int[] OptimalTour { get; set; }
+        public SerializableLocation[] Cities { get; set; }
+
+        public static TSPSpec ToDomain(SerializableTSPSpec spec)
+        {
+            return new TSPSpec(
+                spec.Name,
+                spec.OptimalTour,
+                spec.Cities.Select(SerializableLocation.ToDomain).ToList());
+        }
+
+
+
+        public override string ToString()
+        {
+            var coordinates = string.Join(",", (IEnumerable<SerializableLocation>)Cities);
+            return $"Name: {Name} Cities({Cities.Length}) OptimalTour{coordinates}";
+        }
+    }
+
+    TSPSpec[] specs;
+    TSPSpec selectedTSPSpec;
 
     protected override async Task OnInitializedAsync()
     {
-        coordinates = await Http.GetJsonAsync<TSPspecs[]>("sample-data/weather.json");
+        var serverSpecs = await Http.GetJsonAsync<SerializableTSPSpec[]>("sample-data/tspspecs.json");
+        Console.WriteLine($"{string.Join(Environment.NewLine, (IEnumerable<SerializableTSPSpec>)serverSpecs)}");
+        specs = serverSpecs
+            .Select(SerializableTSPSpec.ToDomain)
+            .OrderBy(spec => spec.Cities.Count)
+            .ToArray();
+
+        selectedTSPSpec = specs.FirstOrDefault();
     }
 
-    public class TSPspecs
+    public class SerializableLocation
     {
-        public string Name{get;set;}
-        public List<int> OptimalTour{get;set;}
-        public List<Cities> Cities{get;set;}
+        public double X { get; set; }
+        public double Y { get; set; }
+
+        public static Location ToDomain(SerializableLocation location)
+        {
+            return new Location(location.X, location.Y);
+        }
+
+        public override string ToString()
+        {
+            return $"({X}/{Y})";
+        }
     }
 
-    public class Cities
+    private void TSPSpecSelected(ChangeEventArgs e)
     {
-        public int X{get;set;}
-        public int Y{get;set;}
+        var specName = (string)e.Value;
+        Console.WriteLine($"SelectedSpecname: {specName}");
+
+        selectedTSPSpec = specs.Single(spec => spec.Name == specName);
     }
+
+
+    BECanvasComponent scene;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(scene == null)
+        {
+            return;
+        }
+
+        var context = await scene.CreateCanvas2DAsync();
+        await context.ClearRectAsync(0,0, scene.Width, scene.Height);
 }

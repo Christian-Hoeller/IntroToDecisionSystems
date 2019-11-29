@@ -32,8 +32,6 @@ else
 
 @code {
 
-
-
     public class SerializableTSPSpec
     {
         public string Name { get; set; }
@@ -101,11 +99,57 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(scene == null)
+        if (scene == null)
         {
             return;
         }
 
         var context = await scene.CreateCanvas2DAsync();
-        await context.ClearRectAsync(0,0, scene.Width, scene.Height);
+        await context.ClearRectAsync(0, 0, scene.Width, scene.Height);
+
+
+
+        if (selectedTSPSpec == null)
+        {
+            return;
+        }
+
+        var minX = selectedTSPSpec.Cities
+            .Min(location => location.X);
+
+        var maxX = selectedTSPSpec.Cities
+            .Max(location => location.X);
+
+        var minY = selectedTSPSpec.Cities
+            .Min(location => location.Y);
+
+        var maxY = selectedTSPSpec.Cities
+            .Max(location => location.Y);
+
+
+        Location GetSceneCoordinates(Location city)
+        {
+            const int padding = 10;
+
+            var xRatio = (scene.Width - 2 * padding) / (maxX - minX);
+            var yRatio = (scene.Height - 2 * padding) / (maxY - minY);
+
+            var x = (city.X - minX) * xRatio + padding;
+            var y = (city.Y - minY) * yRatio + padding;
+
+            return new Location(x, y);
+
+
+        }
+
+        foreach(var city in selectedTSPSpec.Cities.Select(GetSceneCoordinates))
+        {
+            await context.SetFillStyleAsync("orange");
+
+            await context.BeginPathAsync();
+            await context.ArcAsync(city.X, city.Y, 3, 0, 2 * Math.PI);
+            await context.FillAsync();
+        }
+    }
+
 }

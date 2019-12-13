@@ -13,6 +13,8 @@
 }
 else
 {
+    var optimalTourDistance = Utils
+        .GetDistance(selectedTSPSpec.OptimalTour, selectedTSPSpec.Cities);
     <form>
         <label>
             TSP specification
@@ -23,8 +25,15 @@ else
                 }
             </select>
         </label>
+        <label>
+
+            <input type="checkbox" @bind="showOptimalTour" />
+            Show optimal tour (Distance = @optimalTourDistance)
+        </label>
+    
+
     </form>
-    <BECanvas @ref="scene" Width="500" Height="500"></BECanvas>
+        <BECanvas @ref="scene" Width="500" Height="500"></BECanvas>
 
 
 }
@@ -57,6 +66,7 @@ else
 
     TSPSpec[] specs;
     TSPSpec selectedTSPSpec;
+    bool showOptimalTour = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -142,6 +152,42 @@ else
 
         }
 
+        async Task DrawTour(string color, IReadOnlyList<int> tour)
+        {
+
+            if(tour.Count == 0)
+            {
+                return;
+            }
+
+            await context.SetStrokeStyleAsync(color);
+            await context.BeginPathAsync();
+
+            var coordinates = selectedTSPSpec.Cities
+                .Select(GetSceneCoordinates)
+                .ToArray();
+
+            var startlocatoin = coordinates[tour[0] - 1];
+            await context.MoveToAsync(startlocatoin.X, startlocatoin.Y);
+
+
+            foreach (var cityIndex in tour.Skip(1))
+            {
+                var coordinate = coordinates[cityIndex - 1];
+                await context.LineToAsync(coordinate.X, coordinate.Y);
+            }
+
+            await context.ClosePathAsync();
+            await context.StrokeAsync();
+
+        }
+
+        if (showOptimalTour == true)
+        {
+            await DrawTour("lime", selectedTSPSpec.OptimalTour);
+        }
+
+
         foreach(var city in selectedTSPSpec.Cities.Select(GetSceneCoordinates))
         {
             await context.SetFillStyleAsync("orange");
@@ -151,5 +197,7 @@ else
             await context.FillAsync();
         }
     }
+
+
 
 }

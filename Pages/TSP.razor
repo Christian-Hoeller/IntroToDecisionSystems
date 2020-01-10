@@ -15,24 +15,53 @@ else
 {
     var optimalTourDistance = Utils
         .GetDistance(selectedTSPSpec.OptimalTour, selectedTSPSpec.Cities);
-    <form>
-        <label>
-            TSP specification
-            <select class="form-control" @onchange="TSPSpecSelected">
-                @foreach (var spec in specs)
-                {
-                    <option>@spec.Name</option>
-                }
-            </select>
-        </label>
-        <label>
+<form>
+    <div class="form-row">
+        <div class="form-group">
+            <label>
+                TSP specification
+                <select class="form-control" @onchange="TSPSpecSelected">
+                    @foreach (var spec in specs)
+                    {
+                        <option>@spec.Name</option>
+                    }
+                </select>
+            </label>
+            <label>
 
-            <input type="checkbox" @bind="showOptimalTour" />
-            Show optimal tour (Distance = @optimalTourDistance)
-        </label>
-    
+                <input type="checkbox" @bind="showOptimalTour" />
+                Show optimal tour (Distance = @optimalTourDistance.ToString("F2"))
+            </label>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            TSP solvers:
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var solver in solvers)
+                    {
+                        <tr>
+                            <td>
+                                <label>
+                                    <input type="checkbox" @bind="solver.IsSelected" />
+                                    @solver.Name
+                                </label>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-    </form>
+    <button class="btn btn-primary" @onclick="Start">Start</button>
+</form>
         <BECanvas @ref="scene" Width="500" Height="500"></BECanvas>
 
 
@@ -64,9 +93,44 @@ else
         }
     }
 
+    private void Start()
+    {
+        foreach(var solver in solvers.Where(s => s.IsSelected))
+        {
+            solver.Solve(selectedTSPSpec.Cities);
+        }
+    }
+
+    public class UITSPSolver
+    {
+        private readonly ITSPSolver solver;
+
+        public string Name { get; }
+        public string Color { get; }
+        public bool IsSelected { get; set; }
+
+        public UITSPSolver(ITSPSolver solver, string name, string color)
+        {
+            this.solver = solver;
+            Name = name;
+            Color = color;
+        }
+
+        public void Solve(IReadOnlyList<Location> cities)
+        {
+            var solutin = solver.Solve(cities);
+        }
+    }
+
     TSPSpec[] specs;
     TSPSpec selectedTSPSpec;
     bool showOptimalTour = true;
+
+    private IReadOnlyCollection<UITSPSolver> solvers = new[]
+    {
+        new UITSPSolver(new DummyTSPSolver(), "Dummy 1", "crimson"),
+        new UITSPSolver(new DummyTSPSolver(), "Dummy 2", "steelblue"),
+    };
 
     protected override async Task OnInitializedAsync()
     {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace TSPSolver.TSP
@@ -22,17 +21,5 @@ namespace TSPSolver.TSP
         public string Name { get; }
         public IReadOnlyList<int> OptimalTour { get;}
         public IReadOnlyList<Location> Cities { get;}
-    }
-
-    public class Location
-    {
-        public Location(double x, double y)
-        {
-            X = x;
-            Y = y;
-        }
-
-        public double X { get;}
-        public double Y { get;}
     }
 }

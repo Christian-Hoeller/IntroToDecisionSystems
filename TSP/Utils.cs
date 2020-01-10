@@ -8,27 +8,42 @@ namespace TSPSolver.TSP
 {
     public static class Utils
     {
+        public static double CityDistance(Location l1, Location l2)
+        {
+            var dx = l2.X - l1.X;
+            var dy = l2.Y - l1.Y;
+
+            return Math.Sqrt(dx * dx + dy * dy);
+        }
+
         public static double GetDistance(IReadOnlyList<int> solution, IReadOnlyList<Location> cities)
         {
-            double distance = 0;
-            for (int i = 0; i < solution.Count; i++)
-            {
-                distance += GetDistanceBetweenTwoPoints(cities[solution[i] -1], cities[solution[i]]);
-            }
-            return distance;
+            return solution
+                .Concat(solution.Take(1))
+                .Select(index => cities[index - 1])
+                .Pairwise(CityDistance)
+                .Sum();
+         
         }
+    }
 
-
-        private static double GetDistanceBetweenTwoPoints(Location point1, Location point2)
+    public static class EnumerableExtensions
+    {
+        public static IEnumerable<double> Pairwise(this IEnumerable<Location> source, Func<Location, Location, double> fn)
         {
-            
-            var lengthX = Math.Abs(point1.X - point2.X);
-            var lengthY = Math.Abs(point1.Y - point2.Y);
+            if (source is null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
 
-            double distance = (Math.Pow(lengthX, 2) + Math.Pow(lengthY, 2));
+            if (fn is null)
+            {
+                throw new ArgumentNullException(nameof(fn));
+            }
 
-            return distance;
-
+            return source.Zip(source.Skip(1), fn);
         }
+
+
     }
 }

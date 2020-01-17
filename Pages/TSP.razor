@@ -15,7 +15,7 @@ else
 {
     var optimalTourDistance = Utils
         .GetDistance(selectedTSPSpec.OptimalTour, selectedTSPSpec.Cities);
-<form>
+<form action="javascript:void(0)">
     <div class="form-row">
         <div class="form-group">
             <label>
@@ -41,6 +41,8 @@ else
                 <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Best solution</th>
+                        <th>Difference to optimal solution</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,6 +55,19 @@ else
                                     @solver.Name
                                 </label>
                             </td>
+                            @if(solver.TryGetSolution(out var solution))
+                            {
+                                var distance = Utils.GetDistance(solution, selectedTSPSpec.Cities);
+                                <td>@distance.ToString("F2")</td>
+
+                                var difference = distance / optimalTourDistance;
+                                <td>@difference.ToString("P0")</td>
+                            }
+                            else
+                            {
+                                <td></td>
+                                <td></td>
+                            }
                         </tr>
                     }
                 </tbody>
@@ -91,6 +106,8 @@ else
             var coordinates = string.Join(",", (IEnumerable<SerializableLocation>)Cities);
             return $"Name: {Name} Cities({Cities.Length}) OptimalTour{coordinates}";
         }
+
+
     }
 
     private void Start()
@@ -108,6 +125,8 @@ else
         public string Name { get; }
         public string Color { get; }
         public bool IsSelected { get; set; }
+        private List<int> solution;
+
 
         public UITSPSolver(ITSPSolver solver, string name, string color)
         {
@@ -118,7 +137,18 @@ else
 
         public void Solve(IReadOnlyList<Location> cities)
         {
-            var solutin = solver.Solve(cities);
+            this.solution = solver.Solve(cities);
+        }
+
+        public bool TryGetSolution(out IReadOnlyList<int> solution)
+        {
+            solution = this.solution;
+            return solution != null;
+        }
+
+        public void Reset()
+        {
+            solution = null;
         }
     }
 
@@ -166,6 +196,10 @@ else
         Console.WriteLine($"SelectedSpecname: {specName}");
 
         selectedTSPSpec = specs.Single(spec => spec.Name == specName);
+        foreach(var solver in solvers)
+        {
+            solver.Reset();
+        }
     }
 
 
@@ -249,6 +283,14 @@ else
         if (showOptimalTour == true)
         {
             await DrawTour("lime", selectedTSPSpec.OptimalTour);
+        }
+
+        foreach(var solver in solvers)
+        {
+            if(solver.IsSelected && solver.TryGetSolution(out var solution))
+            {
+                await DrawTour(solver.Color, solution);
+            }
         }
 
 

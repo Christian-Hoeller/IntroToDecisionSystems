@@ -112,6 +112,7 @@ else
 
     private void Start()
     {
+
         foreach(var solver in solvers.Where(s => s.IsSelected))
         {
             solver.Solve(selectedTSPSpec.Cities);
@@ -160,6 +161,7 @@ else
     {
         new UITSPSolver(new DummyTSPSolver(), "Dummy 1", "crimson"),
         new UITSPSolver(new DummyTSPSolver(), "Dummy 2", "steelblue"),
+        new UITSPSolver(new MyAwesomeTSPSolver(), "Cool", "crimson"),
     };
 
     protected override async Task OnInitializedAsync()

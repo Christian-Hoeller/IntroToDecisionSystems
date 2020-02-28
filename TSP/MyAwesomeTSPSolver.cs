@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace TSPSolver.TSP
 {
-    public class MyAwesomeTSPSolver : ITSPSolver
+    public class MyAwesomeTSPSolverHW : ITSPSolver
     {
         public List<int> Solve(IReadOnlyList<Location> cities)
         {
@@ -34,7 +34,6 @@ namespace TSPSolver.TSP
                 int lowestIndex = CitiesNotVisited[allDistances.IndexOf(allDistances.Min())];   //gets the index of the lowest distance --> this is the index in citiesNotVisited
                 visitedCities.Add(lowestIndex);     //adds the lowest index to the visitedCities
                 return RecursiveSolve(cities, visitedCities);
-
             }
         }
 

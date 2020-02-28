@@ -155,13 +155,22 @@ else
 
     TSPSpec[] specs;
     TSPSpec selectedTSPSpec;
+
     bool showOptimalTour = true;
 
     private IReadOnlyCollection<UITSPSolver> solvers = new[]
     {
         new UITSPSolver(new DummyTSPSolver(), "Dummy 1", "crimson"),
         new UITSPSolver(new DummyTSPSolver(), "Dummy 2", "steelblue"),
-        new UITSPSolver(new MyAwesomeTSPSolver(), "AWESOME", "crimson"),
+        new UITSPSolver(new MyAwesomeTSPSolverHW(), "Unsara", "crimson"),
+        new UITSPSolver(new GeneticTSPSolver(), "Genetic TSP", "crimson"),
+        new UITSPSolver(new NearestNeighbourHG(), "Nearest Neighbour", "crimson"),
+        new UITSPSolver(new KUNDKTSPSolver(), "KUNDK nearestNeighbour", "crimson"),
+        new UITSPSolver(new KruskalsAlgorithm(), "Kruskal Algorithm", "crimson"),
+        new UITSPSolver(new MySOEKsolver(), "MYSOEK", "crimson"),
+        new UITSPSolver(new NearestNeighbourMosi(), "Nearest Neighbour MOSI", "crimson"),
+        new UITSPSolver(new SparseTSP(), "Sparse", "crimson"),
+        new UITSPSolver(new MyAwesomeTSPSolverPG(), "Nearest Pohn", "crimson"),
     };
 
     protected override async Task OnInitializedAsync()
